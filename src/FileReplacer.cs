@@ -42,7 +42,7 @@ public sealed class FileReplacer : IFileReplacer
 
             try
             {
-                string content = await _fileUtil.Read(file, cancellationToken).NoSync();
+                string content = await _fileUtil.Read(file, true, cancellationToken).NoSync();
 
                 // ReplaceString the target string if it exists
                 if (content.Contains(targetString))
@@ -50,7 +50,7 @@ public sealed class FileReplacer : IFileReplacer
                     string updatedContent = content.Replace(targetString, replacementString);
 
                     // Write back to the file
-                    await _fileUtil.Write(file, updatedContent, cancellationToken).NoSync();
+                    await _fileUtil.Write(file, updatedContent, true, cancellationToken).NoSync();
 
                     madeChanges = true;
                     _logger.LogInformation("Updated file: {File}", file);
