@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Soenneker.Extensions.ValueTask;
+using Soenneker.Extensions.Task;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.File.Replacer.Abstract;
 
