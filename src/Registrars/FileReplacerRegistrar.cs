@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Soenneker.Utils.Directory.Registrars;
 using Soenneker.Utils.File.Registrars;
 using Soenneker.Utils.File.Replacer.Abstract;
 
@@ -15,7 +16,7 @@ public static class FileReplacerRegistrar
     /// </summary>
     public static IServiceCollection AddFileReplacerAsSingleton(this IServiceCollection services)
     {
-        services.AddFileUtilAsSingleton().TryAddSingleton<IFileReplacer, FileReplacer>();
+        services.AddDirectoryUtilAsSingleton().AddFileUtilAsSingleton().TryAddSingleton<IFileReplacer, FileReplacer>();
 
         return services;
     }
@@ -25,7 +26,7 @@ public static class FileReplacerRegistrar
     /// </summary>
     public static IServiceCollection AddFileReplacerAsScoped(this IServiceCollection services)
     {
-        services.AddFileUtilAsScoped().TryAddScoped<IFileReplacer, FileReplacer>();
+        services.AddDirectoryUtilAsScoped().AddFileUtilAsScoped().TryAddScoped<IFileReplacer, FileReplacer>();
 
         return services;
     }

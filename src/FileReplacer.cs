@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Soenneker.Extensions.Task;
+using Soenneker.Utils.Directory.Abstract;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.File.Replacer.Abstract;
+using System.Collections.Generic;
 using Soenneker.Utils.File.Replacer.Utils;
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Soenneker.Extensions.String;
+using Soenneker.Extensions.ValueTask;
 
 namespace Soenneker.Utils.File.Replacer;
 
@@ -16,17 +18,19 @@ public sealed class FileReplacer : IFileReplacer
 {
     private readonly ILogger<FileReplacer> _logger;
     private readonly IFileUtil _fileUtil;
+    private readonly IDirectoryUtil _directoryUtil;
 
-    public FileReplacer(ILogger<FileReplacer> logger, IFileUtil fileUtil)
+    public FileReplacer(ILogger<FileReplacer> logger, IFileUtil fileUtil, IDirectoryUtil directoryUtil)
     {
         _logger = logger;
         _fileUtil = fileUtil;
+        _directoryUtil = directoryUtil;
     }
 
     public async ValueTask<bool> ReplaceString(string directoryPath, string searchPattern, string targetString, string replacementString,
         bool includeSubdirectories = true, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(directoryPath) || !Directory.Exists(directoryPath))
+        if (string.IsNullOrEmpty(directoryPath) || !(await _directoryUtil.Exists(directoryPath, cancellationToken)))
         {
             Log.DirectoryDoesNotExist(_logger, directoryPath);
             return false;
@@ -38,13 +42,21 @@ public sealed class FileReplacer : IFileReplacer
         if (searchPattern.IsNullOrEmpty())
             searchPattern = "*";
 
-        SearchOption searchOption = includeSubdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
         var madeChanges = false;
 
         try
         {
-            foreach (string file in Directory.EnumerateFiles(directoryPath, searchPattern, searchOption))
+            string extension = (searchPattern == "*" || searchPattern == "*.*")
+                ? ""
+                : (System.IO.Path.GetExtension(searchPattern)?.TrimStart('.') ?? "");
+            List<string> files = await _directoryUtil.GetFilesByExtension(directoryPath, extension, includeSubdirectories, cancellationToken).NoSync();
+            if (searchPattern != "*" && searchPattern != "*.*" && searchPattern.Contains('*', StringComparison.Ordinal))
+            {
+                string suffix = searchPattern.Replace("*", "");
+                if (suffix.Length > 0)
+                    files = files.FindAll(f => f.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) || f.Contains(suffix, StringComparison.OrdinalIgnoreCase));
+            }
+            foreach (string file in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
