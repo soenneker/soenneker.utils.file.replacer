@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Soenneker.Utils.File.Replacer.csproj" />
+        <ProjectReference Include="..\..\src\Soenneker.Utils.File.Replacer\Soenneker.Utils.File.Replacer.csproj" />
     </ItemGroup>
 
     <ItemGroup>
