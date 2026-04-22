@@ -1,20 +1,19 @@
-﻿using Soenneker.Utils.File.Replacer.Abstract;
-using Soenneker.Tests.FixturedUnit;
-using Xunit;
+using Soenneker.Utils.File.Replacer.Abstract;
+using Soenneker.Tests.HostedUnit;
 
 namespace Soenneker.Utils.File.Replacer.Tests;
 
-[Collection("Collection")]
-public class FileReplacerTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public class FileReplacerTests : HostedUnitTest
 {
     private readonly IFileReplacer _util;
 
-    public FileReplacerTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public FileReplacerTests(Host host) : base(host)
     {
         _util = Resolve<IFileReplacer>(true);
     }
 
-    [Fact]
+    [Test]
     public void Default()
     {
 
