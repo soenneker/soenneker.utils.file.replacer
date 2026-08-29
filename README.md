@@ -4,10 +4,24 @@
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.utils.file.replacer/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.utils.file.replacer/actions/workflows/codeql.yml)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Utils.File.Replacer
-### FileReplacer is a utility that processes files in a directory and applies replacement logic to their contents, supporting recursion and asynchronous file operations.
+FileReplacer is a utility that processes files in a directory and applies replacement logic to their contents, supporting recursion and asynchronous file operations.
 
 ## Installation
 
-```
+```bash
 dotnet add package Soenneker.Utils.File.Replacer
 ```
+
+## Quick start
+
+```csharp
+using Soenneker.Utils.File.Replacer.Registrars;
+
+services.AddFileReplacerAsSingleton();
+```
+
+Then inject `IFileReplacer` wherever you need it.
+
+## Common operations
+
+- `ReplaceString()` - Replaces matching text in files selected by the search pattern, optionally including subdirectories. It returns `true` only when at least one file changed, and `false` for invalid input or no replacements.
