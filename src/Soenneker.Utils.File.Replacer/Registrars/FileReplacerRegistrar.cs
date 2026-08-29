@@ -14,6 +14,7 @@ public static class FileReplacerRegistrar
     /// <summary>
     /// Adds <see cref="IFileReplacer"/> as a singleton service. <para/>
     /// </summary>
+    /// <returns>Adds <see cref="IFileReplacer"/> as a singleton service. <para/>.</returns>
     public static IServiceCollection AddFileReplacerAsSingleton(this IServiceCollection services)
     {
         services.AddDirectoryUtilAsSingleton().AddFileUtilAsSingleton().TryAddSingleton<IFileReplacer, FileReplacer>();
@@ -24,6 +25,7 @@ public static class FileReplacerRegistrar
     /// <summary>
     /// Adds <see cref="IFileReplacer"/> as a scoped service. <para/>
     /// </summary>
+    /// <returns>Adds <see cref="IFileReplacer"/> as a scoped service. <para/>.</returns>
     public static IServiceCollection AddFileReplacerAsScoped(this IServiceCollection services)
     {
         services.AddDirectoryUtilAsScoped().AddFileUtilAsScoped().TryAddScoped<IFileReplacer, FileReplacer>();
