@@ -17,7 +17,9 @@ public interface IFileReplacer
     /// <param name="replacementString">The string to replace with.</param>
     /// <param name="includeSubdirectories">Indicates whether to process subdirectories.</param>
     /// <param name="cancellationToken"></param>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <returns><see langword="true"/> when at least one file changed; otherwise, <see langword="false"/>.</returns>
+    /// <remarks>Matching and replacement are ordinal and case-sensitive. Each file is published only after its replacement content is fully written,
+    /// but the operation is not transactional across multiple files.</remarks>
     ValueTask<bool> ReplaceString(string directoryPath, string searchPattern, string targetString, string replacementString,
         bool includeSubdirectories = true, CancellationToken cancellationToken = default);
 }

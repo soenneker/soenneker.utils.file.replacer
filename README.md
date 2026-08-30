@@ -3,8 +3,9 @@
 [![](https://img.shields.io/nuget/dt/soenneker.utils.file.replacer.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.utils.file.replacer/)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.utils.file.replacer/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.utils.file.replacer/actions/workflows/codeql.yml)
 
-# ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Utils.File.Replacer
-FileReplacer is a utility that processes files in a directory and applies replacement logic to their contents, supporting recursion and asynchronous file operations.
+# Soenneker.Utils.File.Replacer
+
+Replaces ordinal, case-sensitive text across files selected by a filesystem search pattern.
 
 ## Installation
 
@@ -12,16 +13,30 @@ FileReplacer is a utility that processes files in a directory and applies replac
 dotnet add package Soenneker.Utils.File.Replacer
 ```
 
-## Quick start
+## Registration
 
 ```csharp
-using Soenneker.Utils.File.Replacer.Registrars;
-
-services.AddFileReplacerAsSingleton();
+builder.Services.AddFileReplacerAsSingleton();
 ```
 
-Then inject `IFileReplacer` wherever you need it.
+Scoped registration is also available with `AddFileReplacerAsScoped()`.
 
-## Common operations
+## Usage
 
-- `ReplaceString()` - Replaces matching text in files selected by the search pattern, optionally including subdirectories. It returns `true` only when at least one file changed, and `false` for invalid input or no replacements.
+```csharp
+bool changed = await replacer.ReplaceString(
+    directoryPath: repositoryPath,
+    searchPattern: "*.cs",
+    targetString: "Old.Namespace",
+    replacementString: "New.Namespace",
+    includeSubdirectories: true,
+    cancellationToken);
+```
+
+`searchPattern` uses the platform filesystem matcher and supports patterns such as `*.cs`, `Service*.json`, and `file?.txt`. An empty pattern is treated as `*`. Recursive enumeration skips symbolic links, junctions, and other reparse points.
+
+The replacement uses `StringComparison.Ordinal`; casing must match exactly. `true` means at least one file was changed. `false` means the directory or target was invalid, no match was found, or every matching file failed to process. Individual file and enumeration failures are logged.
+
+Each changed file is written to a temporary sibling and moved over the original only after the new contents are complete. Cancellation therefore does not leave a half-written version of the file being processed. The operation is not transactional across the directory: files completed before a later error or cancellation stay changed.
+
+This utility reads each selected file as text and writes UTF-8 without a byte-order mark. Limit the search pattern to known text files; selecting binaries or files whose exact encoding/BOM must be preserved can corrupt or alter them. Review changes in version control before using broad replacements.

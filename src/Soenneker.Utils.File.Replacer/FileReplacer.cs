@@ -3,9 +3,9 @@ using Soenneker.Extensions.Task;
 using Soenneker.Utils.Directory.Abstract;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.File.Replacer.Abstract;
-using System.Collections.Generic;
 using Soenneker.Utils.File.Replacer.Utils;
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Soenneker.Extensions.String;
@@ -46,17 +46,14 @@ public sealed class FileReplacer : IFileReplacer
 
         try
         {
-            string extension = (searchPattern == "*" || searchPattern == "*.*")
-                ? ""
-                : (System.IO.Path.GetExtension(searchPattern)?.TrimStart('.') ?? "");
-            List<string> files = await _directoryUtil.GetFilesByExtension(directoryPath, extension, includeSubdirectories, cancellationToken).NoSync();
-            if (searchPattern != "*" && searchPattern != "*.*" && searchPattern.Contains('*', StringComparison.Ordinal))
+            var options = new EnumerationOptions
             {
-                string suffix = searchPattern.Replace("*", "");
-                if (suffix.Length > 0)
-                    files = files.FindAll(f => f.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) || f.Contains(suffix, StringComparison.OrdinalIgnoreCase));
-            }
-            foreach (string file in files)
+                RecurseSubdirectories = includeSubdirectories,
+                IgnoreInaccessible = false,
+                AttributesToSkip = FileAttributes.ReparsePoint
+            };
+
+            foreach (string file in System.IO.Directory.EnumerateFiles(directoryPath, searchPattern, options))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -70,9 +67,20 @@ public sealed class FileReplacer : IFileReplacer
                         continue;
 
                     string updatedContent = content.Replace(targetString, replacementString, StringComparison.Ordinal);
+                    string temporaryPath = file + "." + Guid.NewGuid().ToString("N") + ".tmp";
 
-                    await _fileUtil.Write(file, updatedContent, true, cancellationToken)
-                                   .NoSync();
+                    try
+                    {
+                        await _fileUtil.Write(temporaryPath, updatedContent, true, cancellationToken)
+                                       .NoSync();
+                        await _fileUtil.Move(temporaryPath, file, log: false, cancellationToken)
+                                       .NoSync();
+                    }
+                    finally
+                    {
+                        await _fileUtil.Delete(temporaryPath, log: false, cancellationToken: CancellationToken.None)
+                                       .NoSync();
+                    }
 
                     madeChanges = true;
                     Log.UpdatedFile(_logger, file);
