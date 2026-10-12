@@ -46,9 +46,9 @@
 
     <ItemGroup>
         <PackageReference Include="Soenneker.Utils.Directory" Version="4.0.951" />
-        <PackageReference Include="Soenneker.Utils.File" Version="4.0.2292" />
+        <PackageReference Include="Soenneker.Utils.File" Version="4.0.2299" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Soenneker.Extensions.ValueTask" Version="4.0.125" />
+        <PackageReference Include="Soenneker.Extensions.ValueTask" Version="4.0.126" />
     </ItemGroup>
 </Project>
